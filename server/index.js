@@ -80,6 +80,7 @@ app.get("/api/getsearch/:bname", (req,res) =>{
 });
 
 
+
 app.delete("/api/accept/:bookid", (req,res) =>{
 
     const bookid=req.params.bookid;
@@ -95,11 +96,15 @@ app.post("/api/postlike", (req,res) =>{
     const bookid=req.body.bookid;
     const senuid=req.body.senuid;
     const recuid=req.body.recuid;
-    
-    const stmt =`INSERT INTO likes (senuid, recuid, accepted, bookid) VALUES (?,?,0,?);`;
-    db.query(stmt, [senuid,recuid,bookid], (err,result)=>{
+    const bname=req.body.bname;
+    const price=req.body.price;
+
+    const stmt =`INSERT INTO likes (senuid, recuid, accepted, bookid, bname, price) VALUES (?,?,0,?,?,?);`;
+    db.query(stmt, [senuid,recuid,bookid,bname,price], (err,result)=>{
    //     console.log(result);
     })
+
+    
 
 });
 
@@ -116,14 +121,30 @@ app.put("/api/postlikeaccept", (req,res) =>{
 
 });
 
+app.put("/api/updatelikes", (req,res) =>{
+    const recuid=req.body.recuid;
+    const bookid=req.body.bookid;
+    console.log(bookid);
+    console.log(recuid);
+    db.query("Update books set likedby=concat(likedby,',',?),likes=likes+1  where bookid=?", [recuid,bookid], (err,result)=>{
+    res.send(result);   
+    console.log(result);
+    console.log(err);
+    })
+});
+
+
 
 app.post("/api/like", (req,res) =>{
     const bookid=req.body.bookid;
     const senuid=req.body.senuid;
     const recuid=req.body.recuid;
+    const bname=req.body.bname;
+    const price=req.body.price;
     
-    const stmt =`INSERT INTO requests (recuid,senuid,bookid) VALUES (?,?,?);`;
-    db.query(stmt, [recuid,senuid,bookid], (err,result)=>{
+    
+    const stmt =`INSERT INTO requests (recuid,senuid,bookid,bname,price) VALUES (?,?,?,?,?);`;
+    db.query(stmt, [recuid,senuid,bookid,bname,price], (err,result)=>{
    //     console.log(result);
     })
 
