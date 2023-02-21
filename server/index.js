@@ -52,6 +52,14 @@ app.get("/api/get", (req,res) =>{
     })
 
 });
+app.get("/api/mybooks/:Uid", (req,res) =>{
+    const uid=req.params.Uid;
+    const stmt ="SELECT * FROM books where uid=?";
+    db.query(stmt, uid, (err,result)=>{
+        res.send(result);
+    })
+
+});
 
 app.get("/api/getreq", (req,res) =>{
     const stmt =`SELECT * FROM requests;`;
@@ -61,9 +69,10 @@ app.get("/api/getreq", (req,res) =>{
 
 });
 
-app.get("/api/getlikes", (req,res) =>{
-    const stmt =`SELECT * FROM likes;`;
-    db.query(stmt, (err,result)=>{
+app.get("/api/getlikes/:Uid", (req,res) =>{
+    const recuid=req.params.Uid;
+    const stmt ="SELECT * FROM likes where senuid=?";
+    db.query(stmt, [recuid],(err,result)=>{
         res.send(result);
     })
 
@@ -79,12 +88,35 @@ app.get("/api/getsearch/:bname", (req,res) =>{
 
 });
 
-
-
-app.delete("/api/accept/:bookid", (req,res) =>{
+app.delete("/api/clearlikes/:bookid/:senuid", (req,res) =>{
 
     const bookid=req.params.bookid;
-    db.query("DELETE FROM requests where bookid=?", bookid, (err,result)=>{
+    const senuid=req.params.senuid;
+    db.query("DELETE FROM likes where bookid=? and senuid=? and accepted=1", [bookid,senuid], (err,result)=>{
+        res.send(result);
+       console.log(result);
+       console.log(err);
+    })
+
+});
+
+app.delete("/api/sold/:bookid", (req,res) =>{
+
+    const bookid=req.params.bookid;
+    const senuid=req.params.senuid;
+    db.query("DELETE FROM books where bookid=?", bookid, (err,result)=>{
+        res.send(result);
+       console.log(result);
+       console.log(err);
+    })
+
+});
+
+app.delete("/api/accept/:bookid/:senuid", (req,res) =>{
+
+    const bookid=req.params.bookid;
+    const senuid=req.params.senuid;
+    db.query("DELETE FROM requests where bookid=? and senuid=?", [bookid,senuid], (err,result)=>{
         res.send(result);
        console.log(result);
        console.log(err);
@@ -172,12 +204,12 @@ app.post("/api/bookinsert", (req,res) =>{
     const lang=req.body.Lang;
     const price=req.body.Price;
     const desc=req.body.Desc;
-    const bid=uid[0]+uid[1]+uid[2]+bname[0]+bname[1]+author[0]+author[0]+pubyear[0]+pubyear[1];
+    const bid=uid[0]+uid[1]+uid[2]+bname[0]+bname[1]+author[0]+author[1]+author[2]+author[3];
     const imgsrc=req.body.Imgsrc;
     let pdate = new Date().toISOString().slice(0, 10)
 
     
-    const stmt =`INSERT INTO books (uid, bookid, bname, author, genre, pubyear, lang, price, description, imsrc, pdate) VALUES (?,?,?,?,?,?,?,?,?,?,?);`;
+    const stmt =`INSERT INTO books (uid, bookid, bname, author, genre, pubyear, lang, price, description, imsrc, pdate,likes,likedby) VALUES (?,?,?,?,?,?,?,?,?,?,?,0,'');`;
     db.query(stmt, [uid,bid,bname,author,genre,pubyear,lang,price,desc,imgsrc,pdate], (err,result)=>{
        console.log(err);
     })
